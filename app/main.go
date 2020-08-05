@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -18,7 +19,6 @@ func init() {
 	}
 }
 
-
 func main() {
 	port := os.Getenv("PORT")
 	mode := os.Getenv("GIN_MODE")
@@ -28,7 +28,6 @@ func main() {
 
 	router := NewRouter()
 	router.ConfigureRoutes()
-
 
 	err := router.Run(port) // 0.0.0.0:8080
 	if err != nil {
@@ -41,20 +40,21 @@ type Router gin.Engine
 func (router *Router) Run(portNumbers ...string) error {
 	var portStrings []string
 	for _, port := range portNumbers {
-		portStrings = append(portStrings, ":" + port)
+		portStrings = append(portStrings, ":"+port)
 	}
 	engine := (*gin.Engine)(router)
 	return engine.Run(portStrings...)
 }
 
-func (router *Router) ConfigureRoutes() Router  {
-	router.GET("/index", handleIndex)
-	router.GET("/home", handleHome)
-	router.GET("/hello/:message", handleEcho)
+func (router *Router) ConfigureRoutes() Router {
+	router.GET("/", handleIndex)
+	router.GET("/home/", handleHome)
+	router.GET("/hello/:message/", handleEcho)
 
-	user := router.Group("/user")
+	user := router.Group("/users")
 	{
-		user.GET("/:name", handleUser) // user.GET("/", handleUser)
+		user.POST("/", handleCreateUser)
+		user.GET("/:name/", handleUser) // user.GET("/", handleUser)
 	}
 	//goland:noinspection GoVetCopyLock
 	return *router
@@ -64,11 +64,41 @@ func (router *Router) ConfigureRoutes() Router  {
 func NewRouter() Router {
 	engine := gin.Default()
 	engine.Use(gin.Logger())
-	engine.Static("/assets", "/app/assets")
-	engine.StaticFile("favicon.ico", "/app/assets/favicon.ico")
+
+	engine.Static("/static", "static")
+	engine.StaticFile("favicon.ico", "/app/static/assets/favicon.ico")
 	engine.LoadHTMLGlob("templates/*.html.tmpl")
+
 	router := Router(*engine)
 	return router
+}
+
+type User struct {
+	Name    string
+	Vehicle string
+}
+
+func handleCreateUser(c *gin.Context) {
+	var user User
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		log.Print(err)
+		c.HTML(http.StatusBadRequest, "error.html.tmpl", gin.H{
+			"message":    err,
+			"statusCode": http.StatusBadRequest,
+		})
+		return
+	}
+
+	if _, ok := db[user.Name]; !ok {
+		c.JSON(http.StatusCreated, gin.H{"message": user})
+		return
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": fmt.Sprintf("there is already an user with name '%s'\n%#v\n", user.Name, user),
+		})
+		return
+	}
 }
 
 func handleHome(c *gin.Context) {

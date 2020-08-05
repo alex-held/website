@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="build &amp; debug" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="website" />
+    <working_directory value="$PROJECT_DIR$" />
+    <go_parameters value="-i" />
+    <envs>
+      <env name="PORT" value="8080" />
+      <env name=" GIN-MODE" value="debug" />
+    </envs>
+    <kind value="PACKAGE" />
+    <filePath value="$PROJECT_DIR$/../../../githubgithub.com/alex-held/website.com/alex-held/website" />
+    <package value="github.com/alex-held/website" />
+    <directory value="$PROJECT_DIR$" />
+    <output_directory value="$PROJECT_DIR$/website" />
+    <method v="2" />
+  </configuration>
+</component>

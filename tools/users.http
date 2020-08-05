@@ -1,0 +1,9 @@
+POST http://localhost:{{PORT}}/users
+Content-Type: application/json
+
+{
+	"name":    "albert",
+	"vehicle": "rocket 🚀"
+}
+
+###
